@@ -1,0 +1,52 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: newrelic-etcd-secrets-reader
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: newrelic-etcd-secrets-reader
+  namespace: openshift-config
+subjects:
+- kind: ServiceAccount
+  name: newrelic-bundle-newrelic-infrastructure-controlplane
+  namespace: pl
+roleRef:
+  kind: ClusterRole
+  name: newrelic-etcd-secrets-reader
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: newrelic-privilidged-scc-access
+  namespace: pl 
+rules:
+- apiGroups:
+  - security.openshift.io 
+  resourceNames:
+  - privilidged
+  resources:
+  - securitycontextconstraints 
+  verbs: 
+  - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: newrelic-privilidged-scc-access
+  namespace: pl
+subjects:
+roleRef:
+  kind: Role
+  name: newrelic-privilidged-scc-access
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: system:serviceaccounts
